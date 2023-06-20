@@ -4,7 +4,7 @@ This project is a Java-based Audio Visualizer application that incorporates real
 
 ## Features
 
-1. Real-time Frequency Analysis: The application implements the Fast Fourier Transform (FFT) algorithm for extracting frequency content from audio files in real time.
+1. Real-time Frequency Analysis: The application implements the Fast Fourier Transform (FFT) algorithm for extracting frequency content from audio files in real-time.
 
 2. Audio Downloading: Users can download audio files from YouTube links using the application. The application allows the user to choose up to 4 different audio file types to download from.
 
@@ -42,8 +42,10 @@ Once the Audio Downloader and Visualizer application is running, you can perform
 
 Enter a valid YouTube link in the provided input field to download audio files from that link.
 
-Select up to 4 different audio file types to download.
+Select from up to 4 different audio file types to download.
 
 After the audio files are downloaded, you can choose to visualize them using the built-in visualizer.
 
 If you wish to edit the downloaded audio files, explore the editing options available in the application's GUI.
+
+Thank you. 
