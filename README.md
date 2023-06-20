@@ -35,7 +35,6 @@ To run the Audio Downloader and Visualizer application on your local machine, fo
 4. Build the application using your preferred Java development environment or by running the following command in the project directory:
    ```bash
    javac Main.java
-   ```bash
    java Main
 
 Usage
