@@ -143,7 +143,8 @@ public class AudioVisualizer extends JFrame {
             is.close();
             os.close();
 
-            visualize("audio.mp3"); // Visualize the downloaded audio file
+            visualize("audio.mp3"); // Visualize the downloaded audio
+            
 
         } catch (IOException e) {
             e.printStackTrace();
