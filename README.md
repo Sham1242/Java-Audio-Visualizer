@@ -46,6 +46,4 @@ Select from up to 4 different audio file types to download.
 
 After the audio files are downloaded, you can choose to visualize them using the built-in visualizer.
 
-If you wish to edit the downloaded audio files, explore the editing options available in the application's GUI.
-
 Thank you. 
