@@ -8,9 +8,9 @@ This project is a Java-based Audio Visualizer application that incorporates real
 
 2. Audio Downloading: Users can download audio files from YouTube links using the application. The application allows the user to choose up to 4 different audio file types to download from.
 
-3. Audio Visualization: The downloaded audio files can be visualized using the application's built-in visualization module. The visualization provides users with a graphical representation of the audio's frequency content.
+3. Audio Visualization: The downloaded audio files can be visualized using the application's built-in visualization module. The visualization provides users with a graphical representation of the audio's frequency/volume content.
 
-4. Audio Editing: Users can also perform basic editing operations on the downloaded audio files, such as trimming, merging, or adding effects. The application provides a user-friendly interface for these editing functionalities.
+4. Audio Editing: Users can also perform basic editing operations on the downloaded audio files, such as trimming. The application provides a user-friendly interface for these editing functionality.
 
 ## Technologies Used
 
