@@ -20,7 +20,7 @@ public class AudioVisualizerApp extends JFrame {
         setLayout(new GridLayout(3, 2));
 
         youtubeLinkField = new JTextField();
-        audioTypeComboBox = new JComboBox<>(new String[]{"M4A", "WAV", "MP3", "MP4"});
+        audioTypeComboBox = new JComboBox<>(new String[]{"webm", "mp4", "mp3", "bestaudio"});
         downloadButton = new JButton("Download");
         visualizeButton = new JButton("Visualize");
         editButton = new JButton("Edit");
