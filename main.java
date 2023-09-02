@@ -1,158 +1,206 @@
-import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.net.URL;
+import com.sapher.youtubedl.YoutubeDL;
+import com.sapher.youtubedl.YoutubeDLRequest;
+import com.sapher.youtubedl.mapper.VideoInfo;
 
-public class AudioVisualizer extends JFrame {
+public class AudioVisualizerApp extends JFrame {
+    private JButton downloadButton;
+    private JButton visualizeButton;
+    private JButton editButton;
+    private JTextField youtubeLinkField;
+    private JComboBox<String> audioTypeComboBox;
 
-    private static final int WIDTH = 800;
-    private static final int HEIGHT = 400;
-    private static final int BAR_WIDTH = 5;
-
-    private Complex[] fftData;
-    private byte[] audioData;
-
-    public AudioVisualizer() {
-        super("Audio Visualizer");
+    public AudioVisualizerApp() {
+        setTitle("Audio Visualizer");
+        setSize(400, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(WIDTH, HEIGHT);
+        setLayout(new GridLayout(3, 2));
 
-        JPanel panel = new JPanel();
-        JTextField urlField = new JTextField(30);
-        JButton downloadButton = new JButton("Download");
-        panel.add(urlField);
-        panel.add(downloadButton);
-        getContentPane().add(panel, BorderLayout.NORTH);
+        youtubeLinkField = new JTextField();
+        audioTypeComboBox = new JComboBox<>(new String[]{"M4A", "WAV", "MP3", "MP4"});
+        downloadButton = new JButton("Download");
+        visualizeButton = new JButton("Visualize");
+        editButton = new JButton("Edit");
 
         downloadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String youtubeURL = urlField.getText();
-                downloadAudioFromYouTube(youtubeURL);
+                String youtubeLink = youtubeLinkField.getText();
+                Object selectedAudioTypeObject = audioTypeComboBox.getSelectedItem();
+                String selectedAudioType = selectedAudioTypeObject != null ? selectedAudioTypeObject.toString() : "";
+
+                
+                // Define the directory where you want to save the downloaded audio
+                String downloadDirectory = "download/path/";
+        
+                // Create a YoutubeDLRequest
+                YoutubeDLRequest request = new YoutubeDLRequest(youtubeLink, downloadDirectory);
+                
+                // Set the preferred audio format (e.g., "best" for the best available quality)
+                request.setOption("-f", selectedAudioType);
+                
+                try {
+                    // Execute the request to download the audio
+                    VideoInfo videoInfo = YoutubeDL.execute(request);
+                    System.out.println("Downloaded: " + videoInfo.getTitle());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    // Handle the exception appropriately (e.g., show an error message)
+                }
             }
         });
 
-        setVisible(true);
-    }
-
-    public void visualize(String audioFilePath) {
-        try {
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File(audioFilePath));
-            AudioFormat format = audioStream.getFormat();
-            DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
-
-            SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info);
-            line.open(format);
-            line.start();
-
-            int numBytesRead;
-            audioData = new byte[line.getBufferSize() / 5];
-            fftData = new Complex[line.getBufferSize() / 10];
-
-            while ((numBytesRead = audioStream.read(audioData)) != -1) {
-                updateFFTData();
-                draw();
-                line.write(audioData, 0, numBytesRead);
+        visualizeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String audioFilePath = "path/to/your/audio/file.wav"; // Replace with the actual audio file path
+                visualizeAudio(audioFilePath);
             }
+        });
 
-            line.drain();
-            line.stop();
-            line.close();
-            audioStream.close();
+        editButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showEditDialog();
+            }
+        });
 
-        } catch (IOException | LineUnavailableException | UnsupportedAudioFileException e) {
-            e.printStackTrace();
+        add(new JLabel("YouTube Link:"));
+        add(youtubeLinkField);
+        add(new JLabel("Select Audio Type:"));
+        add(audioTypeComboBox);
+        add(downloadButton);
+        add(visualizeButton);
+        add(editButton);
+    }
+
+    private void showEditDialog() {
+        JFrame editFrame = new JFrame("Edit Audio");
+        editFrame.setSize(400, 200);
+        editFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        editFrame.setLayout(new GridLayout(4, 2));
+        editFrame.setLocationRelativeTo(null);
+
+        JTextField inputField = new JTextField();
+        JTextField outputField = new JTextField();
+        JTextField startTimeField = new JTextField();
+        JTextField endTimeField = new JTextField();
+
+        JButton editSubmitButton = new JButton("Edit");
+
+        editSubmitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String inputFilePath = inputField.getText();
+                String outputFilePath = outputField.getText();
+                String startTime = startTimeField.getText();
+                String endTime = endTimeField.getText();
+
+                // Execute FFmpeg command to edit the audio file
+                String ffmpegCommand = "ffmpeg -i " + inputFilePath + " -ss " + startTime + " -to " + endTime + " " + outputFilePath;
+
+                try {
+                    Process process = Runtime.getRuntime().exec(ffmpegCommand);
+                    process.waitFor();
+                    JOptionPane.showMessageDialog(null, "Audio edited successfully!");
+                } catch (IOException | InterruptedException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error editing audio: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        editFrame.add(new JLabel("Input File:"));
+        editFrame.add(inputField);
+        editFrame.add(new JLabel("Output File:"));
+        editFrame.add(outputField);
+        editFrame.add(new JLabel("Start Time (hh:mm:ss):"));
+        editFrame.add(startTimeField);
+        editFrame.add(new JLabel("End Time (hh:mm:ss):"));
+        editFrame.add(endTimeField);
+        editFrame.add(editSubmitButton);
+
+        editFrame.setVisible(true);
+    }
+
+
+
+    private void visualizeAudio(String audioFilePath) {
+        try {
+            File audioFile = new File(audioFilePath);
+
+            // Create a Clip to play the audio
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioStream);
+
+            // Create a new window for visualization
+            JFrame visualizationFrame = new JFrame("Audio Visualization");
+            visualizationFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            visualizationFrame.setSize(800, 400);
+            visualizationFrame.setLocationRelativeTo(null);
+
+            // Create a custom JPanel for visualization
+            JPanel visualizationPanel = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    drawVisualization(g, clip);
+                }
+            };
+
+            visualizationFrame.add(visualizationPanel);
+            visualizationFrame.setVisible(true);
+
+            // Start playing the audio
+            clip.start();
+
+            // Close the visualization window when audio playback ends
+            clip.addLineListener(new LineListener() {
+                @Override
+                public void update(LineEvent event) {
+                    if (event.getType() == LineEvent.Type.STOP) {
+                        visualizationFrame.dispose();
+                    }
+                }
+            });
+        } catch (Exception ex) {
+            ex.printStackTrace();
+                System.out.println("Audio File Error");
         }
     }
 
-    private void updateFFTData() {
-        int N = audioData.length;
+    private void drawVisualization(Graphics g, Clip clip) {
+        int width = getWidth();
+        int height = getHeight();
 
-        // Apply FFT to audioData
-        Complex[] x = new Complex[N];
-        for (int i = 0; i < N; i++) {
-            x[i] = new Complex(audioData[i], 0);
-        }
-
-        fft(x);
-
-        fftData = x;
-    }
-
-    private void fft(Complex[] x) {
-        int N = x.length;
-
-        // Base case
-        if (N == 1) {
-            return;
-        }
-
-        // Splitting the even and odd elements
-        Complex[] even = new Complex[N / 2];
-        Complex[] odd = new Complex[N / 2];
-        for (int k = 0; k < N / 2; k++) {
-            even[k] = x[2 * k];
-            odd[k] = x[2 * k + 1];
-        }
-
-        // Recursive FFT on even and odd elements
-        fft(even);
-        fft(odd);
-
-        // Combine the results
-        for (int k = 0; k < N / 2; k++) {
-            double kth = -2 * k * Math.PI / N;
-            Complex w = new Complex(Math.cos(kth), Math.sin(kth));
-            Complex term = w.multiply(odd[k]);
-            x[k] = even[k].add(term);
-            x[k + N / 2] = even[k].subtract(term);
-        }
-    }
-
-    private void draw() {
-        Graphics g = getGraphics();
+        // Draw a simple visualization of audio volume over time
         g.setColor(Color.BLACK);
-        g.fillRect(0, 0, WIDTH, HEIGHT);
+        g.fillRect(0, 0, width, height);
 
         g.setColor(Color.GREEN);
-        for (int i = 0; i < fftData.length; i++) {
-            double amplitude = fftData[i].abs() / 1000.0; // Adjust the scaling factor for visualization
-            int barHeight = (int) (amplitude * HEIGHT);
-            int x = i * BAR_WIDTH;
-            int y = HEIGHT - barHeight;
-            g.fillRect(x, y, BAR_WIDTH, barHeight);
-        }
-    }
+        int x = 0;
+        int y = height / 2;
+        
+        long clipLength = clip.getMicrosecondLength();
+        long currentPosition;
 
-    private void downloadAudioFromYouTube(String youtubeURL) {
-        try {
-            URL url = new URL(youtubeURL);
-            InputStream is = url.openStream();
-            OutputStream os = new FileOutputStream("audio.mp3");
-
-            byte[] buffer = new byte[2048];
-            int length;
-
-            while ((length = is.read(buffer)) != -1) {
-                os.write(buffer, 0, length);
-            }
-
-            is.close();
-            os.close();
-
-            visualize("audio.mp3"); // Visualize the downloaded audio
-            
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        while ((currentPosition = clip.getMicrosecondPosition()) < clipLength) {
+            x = (int) ((double) currentPosition / clipLength * width);
+            y = height / 2;
+            g.drawLine(x, y, x, y - 100); // Adjust the scaling as needed
         }
     }
 
     public static void main(String[] args) {
-        AudioVisualizer visualizer = new AudioVisualizer();
-        visualizer.visualize("path/to/audio/file.wav");
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new AudioVisualizerApp().setVisible(true);
+            }
+        });
     }
 }
